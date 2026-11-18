@@ -1,0 +1,54 @@
+# Infraestructura del Laboratorio CI/CD - ISY1102
+# Uso:
+#   docker compose up -d --build                 -> solo Jenkins
+#   docker compose --profile sonar up -d         -> Jenkins + SonarQube (fase opcional)
+name: lab-cicd
+
+services:
+  jenkins:
+    build: ./jenkins
+    image: lab-jenkins:1.0
+    container_name: jenkins
+    # SOLO PARA LABORATORIO: root permite usar el socket de Docker del host
+    # sin configurar grupos. En producción se usan agentes dedicados.
+    user: root
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    environment:
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+      - CASC_JENKINS_CONFIG=/usr/share/jenkins/casc/jenkins.yaml
+      - JENKINS_ADMIN_USER=${JENKINS_ADMIN_USER:-admin}
+      - JENKINS_ADMIN_PASSWORD=${JENKINS_ADMIN_PASSWORD:-CambiarEstaClave2026}
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - cicd-net
+    restart: unless-stopped
+
+  sonarqube:
+    image: sonarqube:community
+    container_name: sonarqube
+    profiles: ["sonar"]
+    ports:
+      - "9000:9000"
+    environment:
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+    networks:
+      - cicd-net
+    restart: unless-stopped
+
+volumes:
+  jenkins_home:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:
+
+networks:
+  cicd-net:
+    name: cicd-net

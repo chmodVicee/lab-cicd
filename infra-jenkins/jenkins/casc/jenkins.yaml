@@ -1,0 +1,19 @@
+# Jenkins Configuration as Code (JCasC)
+jenkins:
+  systemMessage: "Laboratorio CI/CD con Jenkins - NutriBox SpA (ISY1102 Seguridad y Calidad en el Desarrollo de Software)"
+  numExecutors: 2
+  mode: NORMAL
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "${JENKINS_ADMIN_USER}"
+          name: "Administrador Laboratorio"
+          password: "${JENKINS_ADMIN_PASSWORD}"
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
+unclassified:
+  location:
+    url: "http://localhost:8080/"
